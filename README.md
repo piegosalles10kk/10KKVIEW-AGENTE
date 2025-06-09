@@ -32,7 +32,7 @@ Com a venv ativada, execute:
 pip install -r requirements.txt
 ```
 ## 🚀 **Configurando o aplicativo**
-- Abra o json chamado config.json que possuio uma estrutura assim:
+- Abra o json chamado **config.json** que possui essa estrutura:
 ```json
 {
     "SHARED_NETWORK_PATH": "",
