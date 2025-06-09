@@ -4,7 +4,6 @@
 Antes de iniciar, certifique-se de que tem o seguinte instalado:
 - **Python 3.8 ou superior** ([Baixar aqui](https://www.python.org/downloads/))
 - **Pip** (já incluído no Python)
-- **Virtual Environment (venv)**
 
 ## ⚙️ **Instalação**
 ### 1️⃣ **Criar e ativar um ambiente virtual**
