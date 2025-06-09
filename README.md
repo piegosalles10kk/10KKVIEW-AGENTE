@@ -31,6 +31,18 @@ Com a venv ativada, execute:
 ```sh
 pip install -r requirements.txt
 ```
+## 🚀 **Configurando o aplicativo**
+- Abra o json chamado config.json que possuio uma estrutura assim:
+```json
+{
+    "SHARED_NETWORK_PATH": "",
+    "COLLECTION_INTERVAL_SECONDS": 10,
+    "MACHINE_ALIAS": ""
+}
+```
+- Informe o caminho da pasta onde deseja armazenar o diretório de pastas do agente em **"SHARED_NETWORK_PATH"**
+- Informe o tempo entre as coletas de dados em segundos dentro da variável **"COLLECTION_INTERVAL_SECONDS"**
+- Informe o apelido da máquina em **"MACHINE_ALIAS"**
 
 ## 🚀 **Rodando o aplicativo**
 - Após instalar as depenências, execute o arquivo chamado "OpenHardwareMonitor.exe" dentro da pasta "OpenHardwareMonitor"
