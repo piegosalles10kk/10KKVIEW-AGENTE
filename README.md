@@ -33,7 +33,8 @@ pip install -r requirements.txt
 ```
 
 ### 🚀 **Rodando o aplicativo**
-Após instalar as depenências, execute:
+- Após instalar as depenências, execute o arquivo chamado "OpenHardwareMonitor.exe" dentro da pasta "OpenHardwareMonitor"
+- Após inicializar o mesmo, execute o comando:
 
 ```sh
 python "10KK VIEW.py"
