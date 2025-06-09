@@ -1,0 +1,5 @@
+{
+    "SHARED_NETWORK_PATH": "\\\\10.10.10.61\\ti\\SIA",
+    "COLLECTION_INTERVAL_SECONDS": 10,
+    "MACHINE_ALIAS": "TI" 
+}
