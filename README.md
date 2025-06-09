@@ -32,7 +32,7 @@ Com a venv ativada, execute:
 pip install -r requirements.txt
 ```
 
-### 🚀 **Rodando o aplicativo**
+## 🚀 **Rodando o aplicativo**
 - Após instalar as depenências, execute o arquivo chamado "OpenHardwareMonitor.exe" dentro da pasta "OpenHardwareMonitor"
 - Após inicializar o mesmo, execute o comando:
 
