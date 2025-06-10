@@ -21,7 +21,8 @@ Caso escolha utilizar sem python, siga os seguintes passos:
 - Informe o caminho da pasta onde deseja armazenar o diretório de pastas do agente em **"SHARED_NETWORK_PATH"**
 - Informe o tempo entre as coletas de dados em segundos dentro da variável **"COLLECTION_INTERVAL_SECONDS"**
 - Informe o apelido da máquina em **"MACHINE_ALIAS"**
-- Após instalar as depenências, execute o arquivo chamado "OpenHardwareMonitor.exe" dentro da pasta "OpenHardwareMonitor"
+- Após configurar o diretório, execute o arquivo chamado "OpenHardwareMonitor.exe" dentro da pasta "OpenHardwareMonitor"
+- Em seguida, execute o .exe chamado  10KK VIEW
 
 ### **Com Python**
 ### 1️⃣ **Criar e ativar um ambiente virtual**
