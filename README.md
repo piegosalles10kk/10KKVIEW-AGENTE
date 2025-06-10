@@ -9,7 +9,7 @@ Antes de iniciar, certifique-se de que tem o seguinte instalado:
 
 ### **Sem Python**
 Caso escolha utilizar sem python, siga os seguintes passos:
-- Abra a pasta **"Executavel"**
+- Abra a pasta **"10KK VIEW"**
 - Abra o json chamado **config.json** que possui essa estrutura:
 ```json
 {
