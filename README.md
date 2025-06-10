@@ -6,6 +6,23 @@ Antes de iniciar, certifique-se de que tem o seguinte instalado:
 - **Pip** (já incluído no Python)
 
 ## ⚙️ **Instalação**
+
+### **Sem Python**
+Caso escolha utilizar sem python, siga os seguintes passos:
+- Abra a pasta **"Executavel"**
+- Abra o json chamado **config.json** que possui essa estrutura:
+```json
+{
+    "SHARED_NETWORK_PATH": "",
+    "COLLECTION_INTERVAL_SECONDS": 10,
+    "MACHINE_ALIAS": ""
+}
+```
+- Informe o caminho da pasta onde deseja armazenar o diretório de pastas do agente em **"SHARED_NETWORK_PATH"**
+- Informe o tempo entre as coletas de dados em segundos dentro da variável **"COLLECTION_INTERVAL_SECONDS"**
+- Informe o apelido da máquina em **"MACHINE_ALIAS"**
+
+### **Com Python**
 ### 1️⃣ **Criar e ativar um ambiente virtual**
 Abra o terminal e execute:
 
