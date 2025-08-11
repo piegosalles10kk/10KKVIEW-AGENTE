@@ -3,3 +3,5 @@ wmi
 wintmp
 portalocker
 pyinstaller
+pynvml
+requests
