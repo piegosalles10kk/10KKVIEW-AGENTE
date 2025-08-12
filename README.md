@@ -13,9 +13,12 @@ Caso escolha utilizar sem python, siga os seguintes passos:
 - Abra o json chamado **config.json** que possui essa estrutura:
 ```json
 {
-    "SHARED_NETWORK_PATH": "",
-    "COLLECTION_INTERVAL_SECONDS": 10,
-    "MACHINE_ALIAS": ""
+  "SHARED_NETWORK_PATH": "",
+  "COLLECTION_INTERVAL_SECONDS": 10,
+  "MACHINE_ALIAS": "TI",
+  "LOCAL": false,
+  "API": true,
+  "APIURL": ""
 }
 ```
 - Informe o caminho da pasta onde deseja armazenar o diretório de pastas do agente em **"SHARED_NETWORK_PATH"**
@@ -54,9 +57,12 @@ pip install -r requirements.txt
 - Abra o json chamado **config.json** que possui essa estrutura:
 ```json
 {
-    "SHARED_NETWORK_PATH": "",
-    "COLLECTION_INTERVAL_SECONDS": 10,
-    "MACHINE_ALIAS": ""
+  "SHARED_NETWORK_PATH": "",
+  "COLLECTION_INTERVAL_SECONDS": 10,
+  "MACHINE_ALIAS": "TI",
+  "LOCAL": true,
+  "API": true,
+  "APIURL": ""
 }
 ```
 - Informe o caminho da pasta onde deseja armazenar o diretório de pastas do agente em **"SHARED_NETWORK_PATH"**
