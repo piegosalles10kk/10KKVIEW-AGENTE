@@ -411,25 +411,237 @@ def get_system_info() -> Dict[str, Any]:
     }
 
 
+def get_disk_name_from_wmi(device_id: str) -> str:
+    """Obtém o nome do disco via WMI"""
+    if not has_wmi or platform.system() != "Windows":
+        return "Desconhecido"
+    
+    try:
+        c = wmi.WMI()
+        for disk in c.Win32_DiskDrive():
+            # Tentar match com device_id
+            if device_id in disk.DeviceID or disk.DeviceID in device_id:
+                return disk.Model or disk.Caption or "Desconhecido"
+        return "Desconhecido"
+    except Exception as e:
+        logger.debug(f"Erro ao obter nome do disco: {e}")
+        return "Desconhecido"
+
+
+def get_motherboard_name() -> str:
+    """Obtém o nome da placa-mãe via WMI"""
+    if not has_wmi or platform.system() != "Windows":
+        return "Desconhecido"
+    
+    try:
+        c = wmi.WMI()
+        for board in c.Win32_BaseBoard():
+            return board.Product or "Desconhecido"
+        return "Desconhecido"
+    except Exception as e:
+        logger.debug(f"Erro ao obter nome da placa-mãe: {e}")
+        return "Desconhecido"
+
+
+def get_top_processes() -> Dict[str, List[Dict[str, Any]]]:
+    """Obtém os top 3 processos por CPU e RAM"""
+    try:
+        processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+            try:
+                pinfo = proc.info
+                processes.append({
+                    'pid': pinfo['pid'],
+                    'name': pinfo['name'] or "",
+                    'cpu_percent': pinfo['cpu_percent'] or 0.0,
+                    'memory_percent': pinfo['memory_percent'] or 0.0
+                })
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        
+        # Top 3 CPU
+        top_cpu = sorted(processes, key=lambda x: x['cpu_percent'], reverse=True)[:3]
+        
+        # Top 3 RAM
+        top_ram = sorted(processes, key=lambda x: x['memory_percent'], reverse=True)[:3]
+        
+        return {
+            "top_cpu_processes": [
+                {
+                    "pid": p['pid'],
+                    "name": p['name'],
+                    "cpu_percent": round(p['cpu_percent'], 1)
+                } for p in top_cpu
+            ],
+            "top_ram_processes": [
+                {
+                    "pid": p['pid'],
+                    "name": p['name'],
+                    "memory_percent": p['memory_percent']
+                } for p in top_ram
+            ],
+            "top_gpu_processes": []  # Placeholder para GPU processes
+        }
+    except Exception as e:
+        logger.debug(f"Erro ao obter top processos: {e}")
+        return {
+            "top_cpu_processes": [],
+            "top_ram_processes": [],
+            "top_gpu_processes": []
+        }
+
+
 def collect_all_data() -> Optional[Dict[str, Any]]:
-    """Coleta todos os dados de hardware de forma otimizada"""
+    """Coleta todos os dados de hardware no formato exato esperado"""
     try:
         system_info = get_system_info()
+        cpu_info = get_cpu_info()
+        memory_info = get_memory_info()
+        disks_info = get_disk_info()
+        network_info = get_network_info()
+        gpu_info_list = get_gpu_info()
         
-        # Coletar dados em paralelo quando possível
+        # Separar disco C:\ como principal
+        disco_principal = None
+        discos_adicionais = []
+        
+        for disk in disks_info:
+            disk_model = get_disk_name_from_wmi(disk['dispositivo'])
+            
+            disk_data = {
+                "particao": disk['ponto_montagem'],
+                "nome": disk_model,
+                "total_gb": disk['total_gb'],
+                "usado_gb": disk['usado_gb'],
+                "livre_gb": disk['livre_gb'],
+                "percentual_uso": disk['percentual_uso'],
+                "uso_espaco_percent": disk['percentual_uso'],
+                "temperatura_celsius": None,
+                "vida_util_restante_percent": None,
+                "dados_gravados_tb": None,
+                "tipo": "Desconhecido"
+            }
+            
+            if disk['ponto_montagem'] == "C:\\":
+                disco_principal = disk_data
+            else:
+                discos_adicionais.append(disk_data)
+        
+        # Se não houver C:\, usar o primeiro disco
+        if disco_principal is None and disks_info:
+            disco_principal = discos_adicionais.pop(0) if discos_adicionais else {
+                "particao": "N/A",
+                "nome": "Desconhecido",
+                "total_gb": 0,
+                "usado_gb": 0,
+                "livre_gb": 0,
+                "percentual_uso": 0,
+                "uso_espaco_percent": 0,
+                "temperatura_celsius": None,
+                "vida_util_restante_percent": None,
+                "dados_gravados_tb": None,
+                "tipo": "Desconhecido"
+            }
+        
+        # Processar GPU
+        gpu_data = {
+            "nome": None,
+            "tipo": None,
+            "temperatura_core_celsius": None,
+            "uso_percentual": None,
+            "memoria_gpu": {
+                "usada_mb": None,
+                "livre_mb": None,
+                "total_mb": None
+            },
+            "clocks_mhz": {}
+        }
+        
+        if gpu_info_list:
+            first_gpu = gpu_info_list[0]
+            gpu_data = {
+                "nome": first_gpu['nome'],
+                "tipo": None,  # Tipo não disponível via pynvml
+                "temperatura_core_celsius": first_gpu.get('temperatura_celsius'),
+                "uso_percentual": first_gpu.get('percentual_uso_gpu'),
+                "memoria_gpu": {
+                    "usada_mb": first_gpu.get('memoria_usada_mb'),
+                    "livre_mb": first_gpu.get('memoria_livre_mb'),
+                    "total_mb": first_gpu.get('memoria_total_mb')
+                },
+                "clocks_mhz": {}
+            }
+        
+        # Processar rede - extrair IPs por interface
+        ips_dict = {}
+        if 'interfaces' in network_info:
+            for interface_name, interface_data in network_info['interfaces'].items():
+                if interface_data.get('enderecos'):
+                    for addr in interface_data['enderecos']:
+                        if addr['tipo'] == 'IPv4':
+                            ips_dict[interface_name] = addr['endereco']
+                            break
+        
+        # Calcular velocidade atual da rede (em Mbps)
+        # Para isso, precisamos de duas medições
+        net_io_start = psutil.net_io_counters()
+        time.sleep(0.5)  # Medir por 0.5 segundos
+        net_io_end = psutil.net_io_counters()
+        
+        bytes_sent_delta = net_io_end.bytes_sent - net_io_start.bytes_sent
+        bytes_recv_delta = net_io_end.bytes_recv - net_io_start.bytes_recv
+        total_bytes_delta = bytes_sent_delta + bytes_recv_delta
+        
+        # Converter para Mbps (bytes/segundo * 8 / 1000000)
+        velocidade_mbps = round((total_bytes_delta / 0.5) * 8 / 1000000, 2)
+        
+        # Obter placa-mãe
+        motherboard_name = get_motherboard_name()
+        
+        # Obter top processos
+        top_processos = get_top_processes()
+        
+        # Formatar timestamp no formato brasileiro
+        timestamp_br = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        
+        # Estrutura final no formato exato
         data = {
-            "machine_alias": MACHINE_ALIAS if MACHINE_ALIAS else system_info["hostname"],
             "hostname": system_info["hostname"],
-            "sistema_operacional": system_info["sistema_operacional"],
-            "versao_so": system_info["versao_so"],
-            "arquitetura": system_info["arquitetura"],
-            "tempo_ligado_horas": system_info["tempo_ligado_horas"],
-            "timestamp": system_info["timestamp"],
-            "cpu": get_cpu_info(),
-            "memoria": get_memory_info(),
-            "discos": get_disk_info(),
-            "rede": get_network_info(),
-            "gpus": get_gpu_info()
+            "machine_alias": MACHINE_ALIAS if MACHINE_ALIAS else system_info["hostname"],
+            "timestamp_coleta": timestamp_br,
+            "monitoramento": {
+                "cpu": {
+                    "percentual_uso": cpu_info['percentual_uso'],
+                    "nucleos_fisicos": cpu_info['nucleos_fisicos'],
+                    "nucleos_logicos": cpu_info['nucleos_logicos'],
+                    "frequencia_mhz": cpu_info['frequencia_mhz'],
+                    "nome": cpu_info['nome'],
+                    "temperatura_package_celsius": cpu_info['temperatura_package_celsius'],
+                    "temperaturas_cores_celsius": cpu_info['temperaturas_cores_celsius'],
+                    "uso_total_percent": cpu_info['uso_total_percent'],
+                    "energia_watts": cpu_info['energia_watts'],
+                    "clocks_mhz": cpu_info['clocks_mhz']
+                },
+                "memoria_ram": {
+                    "total_gb": memory_info['total_gb'],
+                    "usado_gb": memory_info['usado_gb'],
+                    "percentual_uso": memory_info['percentual_uso']
+                },
+                "disco_principal": disco_principal,
+                "discos_adicionais": discos_adicionais,
+                "gpu": gpu_data,
+                "rede": {
+                    "ips": ips_dict,
+                    "bytes_enviados_mb": round(network_info['bytes_enviados'] / (1024**2), 2),
+                    "bytes_recebidos_mb": round(network_info['bytes_recebidos'] / (1024**2), 2),
+                    "velocidade_atual_mbps": velocidade_mbps
+                },
+                "placa_mae": {
+                    "nome": motherboard_name
+                },
+                "uptime_horas": system_info['tempo_ligado_horas'],
+                "top_processos": top_processos
+            }
         }
 
         return data

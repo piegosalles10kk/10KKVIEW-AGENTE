@@ -174,7 +174,7 @@
  [],
  False,
  False,
- 1761310128,
+ 1761314329,
  [('runw.exe',
    'c:\\users\\diego\\desktop\\dev\\10kkview-agente\\venv\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\runw.exe',
    'EXECUTABLE')],
